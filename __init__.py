@@ -18,88 +18,97 @@ Created by Jacques Lucke
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import sys, os, bpy
-sys.path.append(os.path.dirname(__file__)) 
-import target_camera
-from sniper_utils import *
+if "bpy" in locals():
+    import importlib
+
+    importlib.reload(su)
+    importlib.reload(target_camera)
+else:
+    from . import sniper_utils as su
+    from . import target_camera
+import bpy
 
 
 bl_info = {
-    "name":        "Sniper",
+    "name": "Sniper",
     "description": "Professional camera animations for motion graphics.",
-    "author":      "Jacques Lucke",
-    "version":     (1, 3, 2),
-    "blender":     (2, 80, 0),
-	"location":    "View 3D > Tool Shelf > Animation/Sniper",
-    "category":    "Animation"
-    }
-	
-	
+    "author": "Jacques Lucke",
+    "version": (1, 3, 2),
+    "blender": (2, 80, 0),
+    "location": "View 3D > Tool Shelf > Animation/Sniper",
+    "category": "Animation"
+}
+
+
 # interface
 
-class CameraToolsPanel(bpy.types.Panel):
-	bl_space_type = "VIEW_3D"
-	bl_region_type = "UI"
-	bl_category = "Animation"
-	bl_label = "Sniper"
-	bl_context = "objectmode"
-	
-	def draw(self, context):
-		layout = self.layout
-		
-		col = layout.column(align = True)
-		col.operator("sniper.insert_target_camera", icon = "OUTLINER_DATA_CAMERA")
-		if target_camera.targetCameraSetupExists(): col.label(text="Settings are in 'Sniper' tab.", icon = "INFO")
-		
-		col = layout.column(align = True)
-		col.operator("sniper.seperate_text")
-		col.operator("sniper.text_to_name")
-		
-		
-# operators
-		
-class TextToNameOperator(bpy.types.Operator):
-	bl_idname = "sniper.text_to_name"
-	bl_label = "Text to Name"
-	bl_description = "Rename all text objects to their content."
-	
-	def execute(self, context):
-		textToName()
-		return{"FINISHED"}
-		
-class SeperateTextOperator(bpy.types.Operator):
-	bl_idname = "sniper.seperate_text"
-	bl_label = "Seperate Text"
-	bl_description = "Create new text object for every line in active text object."
-	
-	def execute(self, context):
-		active = getActive()
-		if isTextObject(active):
-			seperateTextObject(active)
-			delete(active)
-		
-		return{"FINISHED"}
-			
+class VIEW3D_PT_CameraTools(bpy.types.Panel):
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Animation"
+    bl_label = "Sniper"
+    bl_context = "objectmode"
 
-#registration
+    def draw(self, context):
+        layout = self.layout
+
+        col = layout.column(align=True)
+        col.operator("sniper.insert_target_camera", icon="OUTLINER_DATA_CAMERA")
+        if target_camera.targetCameraSetupExists(): col.label(text="Settings are in 'Sniper' tab.", icon="INFO")
+
+        col = layout.column(align=True)
+        col.operator("sniper.separate_text")
+        col.operator("sniper.text_to_name")
+
+
+# operators
+
+class SNIPER_OT_TextToName(bpy.types.Operator):
+    bl_idname = "sniper.text_to_name"
+    bl_label = "Text to Name"
+    bl_description = "Rename all text objects to their content."
+
+    def execute(self, context):
+        su.textToName()
+        return {"FINISHED"}
+
+
+class SNIPER_OT_SeparateText(bpy.types.Operator):
+    bl_idname = "sniper.separate_text"
+    bl_label = "Seperate Text"
+    bl_description = "Create new text object for every line in active text object."
+
+    def execute(self, context):
+        active = su.getActive()
+        if su.isTextObject(active):
+            su.separateTextObject(active)
+            su.delete(active)
+
+        return {"FINISHED"}
+
+
+# registration
 
 classes = (
-	CameraToolsPanel,
-	TextToNameOperator,
-	SeperateTextOperator,
+    VIEW3D_PT_CameraTools,
+    SNIPER_OT_TextToName,
+    SNIPER_OT_SeparateText,
 )
 
+
 def register():
-	for c in classes:
-		bpy.utils.register_class(c)
-	
-	target_camera.register()
+    for c in classes:
+        bpy.utils.register_class(c)
+
+    target_camera.register()
+
 
 def unregister():
-	for c in reversed(classes):
-		bpy.utils.unregister_class(c)
-	
-	target_camera.unregister()
+    for c in reversed(classes):
+        bpy.utils.unregister_class(c)
+
+    target_camera.unregister()
+
 
 if __name__ == "__main__":
-	register()
+    register()

@@ -4,22 +4,22 @@ mail@jlucke.com
 
 Created by Jacques Lucke
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import bpy, math
-from sniper_utils import *
+from . import sniper_utils as su
 
 # object names
 targetCameraName = "TARGET CAMERA"
@@ -45,13 +45,13 @@ loadingTimePropertyName = "loading time"
 stayTimePropertyName = "stay time"
 
 # property data paths
-travelDataPath = getDataPathFromPropertyName(travelPropertyName)
-wiggleStrengthDataPath = getDataPathFromPropertyName(wiggleStrengthPropertyName)
-wiggleScaleDataPath = getDataPathFromPropertyName(wiggleScalePropertyName)
-slowInDataPath = getDataPathFromPropertyName(slowInPropertyName)
-slowOutDataPath = getDataPathFromPropertyName(slowOutPropertyName)
-loadingTimeDataPath = getDataPathFromPropertyName(loadingTimePropertyName)
-stayTimeDataPath = getDataPathFromPropertyName(stayTimePropertyName)
+travelDataPath = su.getDataPathFromPropertyName(travelPropertyName)
+wiggleStrengthDataPath = su.getDataPathFromPropertyName(wiggleStrengthPropertyName)
+wiggleScaleDataPath = su.getDataPathFromPropertyName(wiggleScalePropertyName)
+slowInDataPath = su.getDataPathFromPropertyName(slowInPropertyName)
+slowOutDataPath = su.getDataPathFromPropertyName(slowOutPropertyName)
+loadingTimeDataPath = su.getDataPathFromPropertyName(loadingTimePropertyName)
+stayTimeDataPath = su.getDataPathFromPropertyName(stayTimePropertyName)
 
 useListSeparator = False
 
@@ -62,7 +62,7 @@ oldHash = ""
 #################################
 
 def insertTargetCamera():
-	oldSelection = getSelectedObjects()
+	oldSelection = su.getSelectedObjects()
 	removeOldTargetCameraObjects()
 
 	camera = newCamera()
@@ -84,18 +84,18 @@ def insertTargetCamera():
 	
 	distanceEmpty.location.z = 4
 	
-	setActive(camera)
+	su.setActive(camera)
 	bpy.context.object.data.dof.focus_object = focus
 	
 	insertWiggleConstraint(wiggle, strongWiggle, dataEmpty)
 	
-	setSelectedObjects(oldSelection)
+	su.setSelectedObjects(oldSelection)
 	newTargetsFromSelection()
 	
 def removeOldTargetCameraObjects():
 	for object in bpy.context.scene.objects:
 		if isPartOfTargetCamera(object):
-			delete(object)
+			su.delete(object)
 	
 def newCamera():
 	bpy.ops.object.camera_add(location = [0, 0, 0])
@@ -107,64 +107,64 @@ def newCamera():
 	return camera
 	
 def newFocusEmpty():
-	focus = newEmpty(name = focusEmptyName, location = [0, 0, 0])
+	focus = su.newEmpty(name = focusEmptyName, location = [0, 0, 0])
 	focus.empty_display_size = 0.2
 	makePartOfTargetCamera(focus)
 	focus.hide_viewport = True
 	return focus
 	
 def newMovementEmpty():
-	movement = newEmpty(name = movementEmptyName, location = [0, 0, 0])
+	movement = su.newEmpty(name = movementEmptyName, location = [0, 0, 0])
 	movement.empty_display_size = 0.2
 	makePartOfTargetCamera(movement)
 	movement.hide_viewport = True
 	return movement
 	
 def newDistanceEmpty():
-	distanceEmpty = newEmpty(name = distanceEmptyName, location = [0, 0, 0])
+	distanceEmpty = su.newEmpty(name = distanceEmptyName, location = [0, 0, 0])
 	distanceEmpty.empty_display_size = 0.2
 	makePartOfTargetCamera(distanceEmpty)
 	distanceEmpty.hide_viewport = True
 	return distanceEmpty
 
 def newStrongWiggleEmpty():
-	strongWiggle = newEmpty(name = strongWiggleEmptyName, location = [0, 0, 0])
+	strongWiggle = su.newEmpty(name = strongWiggleEmptyName, location = [0, 0, 0])
 	strongWiggle.empty_display_size = 0.2
 	makePartOfTargetCamera(strongWiggle)
 	strongWiggle.hide_viewport = True
 	return strongWiggle
 	
 def newWiggleEmpty():
-	wiggle = newEmpty(name = wiggleEmptyName, location = [0, 0, 0])
+	wiggle = su.newEmpty(name = wiggleEmptyName, location = [0, 0, 0])
 	wiggle.empty_display_size = 0.2
 	makePartOfTargetCamera(wiggle)
 	wiggle.hide_viewport = True
 	return wiggle
 
 def newDataEmpty():
-	dataEmpty = newEmpty(name = dataEmptyName, location = [0, 0, 0])
-	setCustomProperty(dataEmpty, travelPropertyName, 1.0, min = 1.0, description = "Progress of Animation")
-	setCustomProperty(dataEmpty, "stops", [], description = "Stores the frames where an target is fully loaded.")
-	setCustomProperty(dataEmpty, wiggleStrengthPropertyName, 0.0, min = 0.0, max = 1.0, description = "Higher values result in more wiggle.")
-	setCustomProperty(dataEmpty, wiggleScalePropertyName, 5.0, min = 1.0, description = "Higher values result in a slower wiggle.")
-	setCustomProperty(dataEmpty, inertiaStrengthPropertyName, 0.0, min = 0.0, description = "Set how far the camera will overshoot the targets.")
+	dataEmpty = su.newEmpty(name = dataEmptyName, location = [0, 0, 0])
+	su.setCustomProperty(dataEmpty, travelPropertyName, 1.0, min = 1.0, description ="Progress of Animation")
+	su.setCustomProperty(dataEmpty, "stops", [], description ="Stores the frames where an target is fully loaded.")
+	su.setCustomProperty(dataEmpty, wiggleStrengthPropertyName, 0.0, min = 0.0, max = 1.0, description ="Higher values result in more wiggle.")
+	su.setCustomProperty(dataEmpty, wiggleScalePropertyName, 5.0, min = 1.0, description ="Higher values result in a slower wiggle.")
+	su.setCustomProperty(dataEmpty, inertiaStrengthPropertyName, 0.0, min = 0.0, description ="Set how far the camera will overshoot the targets.")
 	dataEmpty.hide_viewport = True
-	lockCurrentTransforms(dataEmpty)
+	su.lockCurrentTransforms(dataEmpty)
 	makePartOfTargetCamera(dataEmpty)
 	return dataEmpty
 	
 def newAnimationDataEmpty():
-	animationData = newEmpty(name = animationDataName, location = [0, 0, 0])
+	animationData = su.newEmpty(name = animationDataName, location = [0, 0, 0])
 	animationData.empty_display_size = 0.1
-	setCustomProperty(animationData, travelPropertyName, 1.0, description = "Create your keyframes here. Keyframe handles have no impact in the animation. -> Look into 'Slow In' and 'Slow Out'.")
+	su.setCustomProperty(animationData, travelPropertyName, 1.0, description ="Create your keyframes here. Keyframe handles have no impact in the animation. -> Look into 'Slow In' and 'Slow Out'.")
 	makePartOfTargetCamera(animationData)
 	return animationData
 
 def insertWiggleConstraint(wiggle, strongWiggle, dataEmpty):
 	constraint = wiggle.constraints.new(type = "COPY_TRANSFORMS")
 	constraint.target = strongWiggle
-	driver = newDriver(wiggle, 'constraints["' + constraint.name + '"].influence')
-	linkFloatPropertyToDriver(driver, "var", dataEmpty, wiggleStrengthDataPath)	
+	driver = su.newDriver(wiggle, 'constraints["' + constraint.name + '"].influence')
+	su.linkFloatPropertyToDriver(driver, "var", dataEmpty, wiggleStrengthDataPath)
 	driver.expression = "var**2"
 	
 # create animation
@@ -176,15 +176,15 @@ def recalculateAnimation():
 def createFullAnimation(targetList):
 	global oldHash
 	getKeyframesFromAnimationDataEmpty(targetList)
-	oldSelection = getSelectedObjects()
+	oldSelection = su.getSelectedObjects()
 	cleanupScene(targetList)
 	removeAnimation()
 
 	movement = getMovementEmpty()
 	focus = getFocusEmpty()
 	dataEmpty = getDataEmpty()
-	deleteAllConstraints(movement)
-	deleteAllConstraints(focus)
+	su.deleteAllConstraints(movement)
+	su.deleteAllConstraints(focus)
 	
 	createWiggleModifiers()
 	
@@ -192,7 +192,7 @@ def createFullAnimation(targetList):
 	
 	for i in range(len(targetList)):
 		target = targetList[i]
-		targetBefore = getObjectFromValidIndex(targetList, i-1)
+		targetBefore = su.getObjectFromValidIndex(targetList, i - 1)
 		
 		base = createInertiaEmpties(target, targetBefore)
 		inertiaBases.append(base)
@@ -208,28 +208,28 @@ def createFullAnimation(targetList):
 	reHideUnneededObjects()
 	
 	oldHash = getCurrentSettingsHash()
-	setSelectedObjects(oldSelection)
+	su.setSelectedObjects(oldSelection)
 	
 def cleanupScene(targetList):
 	for object in bpy.context.scene.objects:
 		if isTargetName(object.name) and object not in targetList or isDeleteOnRecalculation(object):
-			delete(object)	
+			su.delete(object)
 	
 	
 def removeAnimation():
-	clearAnimation(getDataEmpty(), travelDataPath)
+	su.clearAnimation(getDataEmpty(), travelDataPath)
 	
 def createInertiaEmpties(target, targetBefore):
-	base = newEmpty(name = "base", type = "SPHERE")
+	base = su.newEmpty(name ="base", type ="SPHERE")
 	base.empty_display_size = 0.15
-	emptyAfter = newEmpty(name = "after inertia")
+	emptyAfter = su.newEmpty(name ="after inertia")
 	emptyAfter.empty_display_size = 0.1
-	emptyBefore = newEmpty(name = "before inertia")
+	emptyBefore = su.newEmpty(name ="before inertia")
 	emptyBefore.empty_display_size = 0.1
 	
-	setParentWithoutInverse(base, target)
-	setParentWithoutInverse(emptyAfter, target)
-	setParentWithoutInverse(emptyBefore, target)
+	su.setParentWithoutInverse(base, target)
+	su.setParentWithoutInverse(emptyAfter, target)
+	su.setParentWithoutInverse(emptyBefore, target)
 	
 	makeDeleteOnRecalculation(base)
 	makeDeleteOnRecalculation(emptyAfter)
@@ -246,60 +246,60 @@ def createInertiaEmpties(target, targetBefore):
 	
 def createPositionConstraint(object, target, before, negate = False):
 	constraint = object.constraints.new(type = "LIMIT_LOCATION")
-	setUseMinMaxToTrue(constraint)
+	su.setUseMinMaxToTrue(constraint)
 	
-	driver = newDriver(object, 'constraints["' + constraint.name + '"].min_x')
+	driver = su.newDriver(object, 'constraints["' + constraint.name + '"].min_x')
 	linkVariablesToIntertiaDriver(driver, target, before)
-	if negate: driver.expression = "-(x1-x2)/(sqrt((x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2)+0.000001)*distance+x1"	
+	if negate: driver.expression = "-(x1-x2)/(sqrt((x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2)+0.000001)*distance+x1" 
 	else: driver.expression = "(x1-x2)/(sqrt((x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2)+0.000001)*distance+x1"	
-	createCopyValueDriver(object, 'constraints["' + constraint.name + '"].min_x', object, 'constraints["' + constraint.name + '"].max_x')
+	su.createCopyValueDriver(object, 'constraints["' + constraint.name + '"].min_x', object, 'constraints["' + constraint.name + '"].max_x')
 	
-	driver = newDriver(object, 'constraints["' + constraint.name + '"].min_y')
+	driver = su.newDriver(object, 'constraints["' + constraint.name + '"].min_y')
 	linkVariablesToIntertiaDriver(driver, target, before)
 	if negate: driver.expression = "-(y1-y2)/(sqrt((x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2)+0.000001)*distance+y1"
 	else: driver.expression = "(y1-y2)/(sqrt((x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2)+0.000001)*distance+y1"
-	createCopyValueDriver(object, 'constraints["' + constraint.name + '"].min_y', object, 'constraints["' + constraint.name + '"].max_y')
+	su.createCopyValueDriver(object, 'constraints["' + constraint.name + '"].min_y', object, 'constraints["' + constraint.name + '"].max_y')
 	
-	driver = newDriver(object, 'constraints["' + constraint.name + '"].min_z')
+	driver = su.newDriver(object, 'constraints["' + constraint.name + '"].min_z')
 	linkVariablesToIntertiaDriver(driver, target, before)
 	if negate: driver.expression = "-(z1-z2)/(sqrt((x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2)+0.000001)*distance+z1"
 	else: driver.expression = "(z1-z2)/(sqrt((x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2)+0.000001)*distance+z1"
-	createCopyValueDriver(object, 'constraints["' + constraint.name + '"].min_z', object, 'constraints["' + constraint.name + '"].max_z')
+	su.createCopyValueDriver(object, 'constraints["' + constraint.name + '"].min_z', object, 'constraints["' + constraint.name + '"].max_z')
 
 def linkVariablesToIntertiaDriver(driver, target, before):
 	dataEmpty = getDataEmpty()
-	linkTransformChannelToDriver(driver, "x1", target, "LOC_X")
-	linkTransformChannelToDriver(driver, "x2", before, "LOC_X")
-	linkTransformChannelToDriver(driver, "y1", target, "LOC_Y")
-	linkTransformChannelToDriver(driver, "y2", before, "LOC_Y")
-	linkTransformChannelToDriver(driver, "z1", target, "LOC_Z")
-	linkTransformChannelToDriver(driver, "z2", before, "LOC_Z")
-	linkFloatPropertyToDriver(driver, "distance", dataEmpty, '["'+ inertiaStrengthPropertyName +'"]')
+	su.linkTransformChannelToDriver(driver, "x1", target, "LOC_X")
+	su.linkTransformChannelToDriver(driver, "x2", before, "LOC_X")
+	su.linkTransformChannelToDriver(driver, "y1", target, "LOC_Y")
+	su.linkTransformChannelToDriver(driver, "y2", before, "LOC_Y")
+	su.linkTransformChannelToDriver(driver, "z1", target, "LOC_Z")
+	su.linkTransformChannelToDriver(driver, "z2", before, "LOC_Z")
+	su.linkFloatPropertyToDriver(driver, "distance", dataEmpty, '["' + inertiaStrengthPropertyName + '"]')
 	
 def setBaseBetweenInertiaEmpties(base, emptyAfter, emptyBefore):
 	constraint = base.constraints.new(type = "LIMIT_LOCATION")
-	setUseMinMaxToTrue(constraint)
+	su.setUseMinMaxToTrue(constraint)
 	createDriversToCopyConstraintValues(emptyAfter, emptyAfter.constraints[0], base, constraint)
 	constraint = base.constraints.new(type = "LIMIT_LOCATION")
 	constraint.influence = 0.5
-	setUseMinMaxToTrue(constraint)
+	su.setUseMinMaxToTrue(constraint)
 	createDriversToCopyConstraintValues(emptyBefore, emptyBefore.constraints[0], base, constraint)
 	
 def createDriversToCopyConstraintValues(fromObject, fromConstraint, toObject, toConstraint):
-	createCopyValueDriver(fromObject, 'constraints["' + fromConstraint.name + '"].min_x', toObject, 'constraints["' + toConstraint.name + '"].min_x')
-	createCopyValueDriver(toObject, 'constraints["' + toConstraint.name + '"].min_x', toObject, 'constraints["' + toConstraint.name + '"].max_x')
-	createCopyValueDriver(fromObject, 'constraints["' + fromConstraint.name + '"].min_y', toObject, 'constraints["' + toConstraint.name + '"].min_y')
-	createCopyValueDriver(toObject, 'constraints["' + toConstraint.name + '"].min_y', toObject, 'constraints["' + toConstraint.name + '"].max_y')
-	createCopyValueDriver(fromObject, 'constraints["' + fromConstraint.name + '"].min_z', toObject, 'constraints["' + toConstraint.name + '"].min_z')
-	createCopyValueDriver(toObject, 'constraints["' + toConstraint.name + '"].min_z', toObject, 'constraints["' + toConstraint.name + '"].max_z')
+	su.createCopyValueDriver(fromObject, 'constraints["' + fromConstraint.name + '"].min_x', toObject, 'constraints["' + toConstraint.name + '"].min_x')
+	su.createCopyValueDriver(toObject, 'constraints["' + toConstraint.name + '"].min_x', toObject, 'constraints["' + toConstraint.name + '"].max_x')
+	su.createCopyValueDriver(fromObject, 'constraints["' + fromConstraint.name + '"].min_y', toObject, 'constraints["' + toConstraint.name + '"].min_y')
+	su.createCopyValueDriver(toObject, 'constraints["' + toConstraint.name + '"].min_y', toObject, 'constraints["' + toConstraint.name + '"].max_y')
+	su.createCopyValueDriver(fromObject, 'constraints["' + fromConstraint.name + '"].min_z', toObject, 'constraints["' + toConstraint.name + '"].min_z')
+	su.createCopyValueDriver(toObject, 'constraints["' + toConstraint.name + '"].min_z', toObject, 'constraints["' + toConstraint.name + '"].max_z')
 	
 def createWiggleModifiers():
 	global oldWiggleScale
 	strongWiggle = getStrongWiggleEmpty()
 	wiggleScale = getWiggleScale()
-	clearAnimation(strongWiggle, "location")
+	su.clearAnimation(strongWiggle, "location")
 	strongWiggle.location = [0, 0, 0]
-	insertWiggle(strongWiggle, "location", 6, wiggleScale)
+	su.insertWiggle(strongWiggle, "location", 6, wiggleScale)
 	oldWiggleScale = wiggleScale
 	
 def createConstraintSet(object, target):
@@ -313,8 +313,8 @@ def createTravelToConstraintDrivers(object):
 	constraints = object.constraints
 	for i in range(getTargetAmount()):
 		constraint = constraints[i]
-		driver = newDriver(object, 'constraints["' + constraint.name + '"].influence')
-		linkFloatPropertyToDriver(driver, "var", dataEmpty, travelDataPath)
+		driver = su.newDriver(object, 'constraints["' + constraint.name + '"].influence')
+		su.linkFloatPropertyToDriver(driver, "var", dataEmpty, travelDataPath)
 		driver.expression = "var - " + str(i)
 		
 def createTravelAnimation(targetList):
@@ -337,17 +337,17 @@ def createTravelAnimation(targetList):
 			
 def positionKeyframeHandles(targetList):
 	dataEmpty = getDataEmpty()
-	changeHandleTypeOfAllKeyframes(dataEmpty, travelDataPath, "FREE")
-	keyframes = getKeyframePoints(dataEmpty, travelDataPath)
+	su.changeHandleTypeOfAllKeyframes(dataEmpty, travelDataPath, "FREE")
+	keyframes = su.getKeyframePoints(dataEmpty, travelDataPath)
 	if len(keyframes) >= 2:
 		for i in range(len(keyframes)):
 			keyframe = keyframes[i]
 			sourceX = keyframe.co.x
 			sourceY = keyframe.co.y
-			beforeX = getObjectFromValidIndex(keyframes, i-1).co.x
-			beforeY = getObjectFromValidIndex(keyframes, i-1).co.y
-			afterX = getObjectFromValidIndex(keyframes, i+1).co.x
-			afterY = getObjectFromValidIndex(keyframes, i+1).co.y
+			beforeX = su.getObjectFromValidIndex(keyframes, i - 1).co.x
+			beforeY = su.getObjectFromValidIndex(keyframes, i - 1).co.y
+			afterX = su.getObjectFromValidIndex(keyframes, i + 1).co.x
+			afterY = su.getObjectFromValidIndex(keyframes, i + 1).co.y
 				
 			(easyIn, strengthIn, easyOut, strengthOut) = getInterpolationParameters(targetList[int(sourceY) - 1])
 			keyframe.handle_left.x = (beforeX - sourceX) * easyIn * strengthIn + sourceX
@@ -362,7 +362,7 @@ def getInterpolationParameters(target):
 	return (easyIn, influenceIn, easyOut, influenceOut)
 	
 def getInterpolationParametersFromSingleValue(easyValue):
-	easyValue = clamp(easyValue, 0, 1)
+	easyValue = su.clamp(easyValue, 0, 1)
 	if easyValue < 0.2:
 		easy = 0
 		influence = 0.5 + (0.2 - easyValue) * 2.5
@@ -375,7 +375,7 @@ def getInterpolationParametersFromSingleValue(easyValue):
 	return (easy, influence)
 	
 def createInertiaAnimation(dataEmpty, inertiaBases):
-	travelKeyframes = getKeyframePoints(dataEmpty, travelDataPath)
+	travelKeyframes = su.getKeyframePoints(dataEmpty, travelDataPath)
 	
 	for i in range(0, len(travelKeyframes), 2):
 		travelKeyframe = travelKeyframes[i]
@@ -388,7 +388,7 @@ def createInertiaAnimation(dataEmpty, inertiaBases):
 			base.keyframe_insert(data_path=dataPath, frame = startFrame)
 			base.keyframe_insert(data_path=dataPath, frame = endFrame)
 			
-			keyframes = getKeyframePoints(base, dataPath)
+			keyframes = su.getKeyframePoints(base, dataPath)
 			keyframe = keyframes[0]
 			keyframe.interpolation = "ELASTIC"
 			keyframe.amplitude = 0.3
@@ -410,17 +410,17 @@ def reHideUnneededObjects():
 def setKeyframesOnAnimationDataEmpty():
 	dataEmpty = getDataEmpty()
 	animationData = getAnimationDataEmpty()
-	selectedKeyframeFrames = getSelectedKeyframeFrames(getKeyframePoints(animationData, travelDataPath))
-	clearAnimation(animationData, travelDataPath)
-	keyframes = getKeyframePoints(dataEmpty, travelDataPath)
+	selectedKeyframeFrames = su.getSelectedKeyframeFrames(su.getKeyframePoints(animationData, travelDataPath))
+	su.clearAnimation(animationData, travelDataPath)
+	keyframes = su.getKeyframePoints(dataEmpty, travelDataPath)
 	for keyframe in keyframes:
 		animationData[travelPropertyName] = keyframe.co.y
 		animationData.keyframe_insert(data_path = travelDataPath, frame = keyframe.co.x)
-	selectKeyframes(getKeyframePoints(animationData, travelDataPath), selectedKeyframeFrames)
+	su.selectKeyframes(su.getKeyframePoints(animationData, travelDataPath), selectedKeyframeFrames)
 		
 def getKeyframesFromAnimationDataEmpty(targets):
 	animationData = getAnimationDataEmpty()
-	keyframes = getKeyframePoints(animationData, travelDataPath)
+	keyframes = su.getKeyframePoints(animationData, travelDataPath)
 	
 	if isValidKeyframeAmount(keyframes, targets):
 		for i in range(len(targets)):
@@ -446,7 +446,7 @@ def isValidKeyframeAmount(keyframes, targetList):
 def newTargetsFromSelection():
 	targets = getTargetList()
 	selectedObjects = []
-	for object in getSelectedObjects():
+	for object in su.getSelectedObjects():
 		if not isPartOfTargetCamera(object):
 			selectedObjects.append(object)
 		
@@ -458,18 +458,18 @@ def newTargetsFromSelection():
 def newRealTarget(target):
 	if isValidTarget(target): return target
 	
-	deselectAll()
-	setActive(target)
-	bpy.ops.object.origin_set(type = 'ORIGIN_GEOMETRY')
+	su.deselectAll()
+	su.setActive(target)
+	bpy.ops.object.origin_set(type ='ORIGIN_GEOMETRY')
 
-	empty = newEmpty(name = realTargetPrefix, location = [0, 0, 0], type = "SPHERE")
+	empty = su.newEmpty(name = realTargetPrefix, location = [0, 0, 0], type ="SPHERE")
 	empty.empty_display_size = 0.2
-	setParentWithoutInverse(empty, target)
+	su.setParentWithoutInverse(empty, target)
 	
-	setCustomProperty(empty, loadingTimePropertyName, 25, min = 1, description = "Frames needed to move to this target.")
-	setCustomProperty(empty, stayTimePropertyName, 20, min = 0, description = "How many frames will the camera hold on this target.")
-	setCustomProperty(empty, slowInPropertyName, 0.8, min = 0.0, max = 1.0, description = "Higher values result in a smoother camera stop on this target.")
-	setCustomProperty(empty, slowOutPropertyName, 0.8, min = 0.0, max = 1.0, description = "Higher values result in a smoother camera start on this target.")
+	su.setCustomProperty(empty, loadingTimePropertyName, 25, min = 1, description ="Frames needed to move to this target.")
+	su.setCustomProperty(empty, stayTimePropertyName, 20, min = 0, description ="How many frames will the camera hold on this target.")
+	su.setCustomProperty(empty, slowInPropertyName, 0.8, min = 0.0, max = 1.0, description ="Higher values result in a smoother camera stop on this target.")
+	su.setCustomProperty(empty, slowOutPropertyName, 0.8, min = 0.0, max = 1.0, description ="Higher values result in a smoother camera start on this target.")
 	
 	makePartOfTargetCamera(empty)
 	
@@ -556,17 +556,17 @@ def getAnimationDataEmpty():
 def selectTargetCamera():
 	camera = getTargetCamera()
 	if camera:
-		deselectAll()
+		su.deselectAll()
 		camera.select = True
-		setActive(camera)
+		su.setActive(camera)
 def selectMovementEmpty():
-	deselectAll()
-	setActive(getMovementEmpty())
+	su.deselectAll()
+	su.setActive(getMovementEmpty())
 def selectTarget(index):
-	deselectAll()
+	su.deselectAll()
 	target = getTargetList()[index]
-	setActive(target)
-	bpy.context.window.scene.frame_current = getFrameOfTravelValue(index+1)
+	su.setActive(target)
+	bpy.context.window.scene.frame_current = getFrameOfTravelValue(index + 1)
 		
 		
 def getTargetAmount():
@@ -608,7 +608,7 @@ def getTargetObjectFromBase(base):
 	return base.parent.parent
 	
 def getSelectedTargets(targetList):
-	objects = getSelectedObjects()
+	objects = su.getSelectedObjects()
 	targets = []
 	for object in objects:
 		targetsOfObject = getTargetsFromObject(object, targetList)
@@ -680,7 +680,7 @@ def getHashFromTargets():
 	return hash
 def getAnimationKeyframesHash():
 	hash = ""
-	keyframes = getKeyframePoints(getAnimationDataEmpty(), travelDataPath)
+	keyframes = su.getKeyframePoints(getAnimationDataEmpty(), travelDataPath)
 	for keyframe in keyframes:
 		hash += str(keyframe.co.x)
 	return hash
@@ -695,16 +695,16 @@ def getHashFromTarget(target):
 def openDopeSheet():
 	area1 = bpy.context.area
 	area1.type = "DOPESHEET_EDITOR"
-	bpy.ops.screen.area_split(direction = "HORIZONTAL", factor = 0.86)
+	bpy.ops.screen.area_split(direction ="HORIZONTAL", factor = 0.86)
 	area1.type = "VIEW_3D"
-	area2 = getAreaByType("DOPESHEET_EDITOR")
+	area2 = su.getAreaByType("DOPESHEET_EDITOR")
 	
 
 		
 # interface
 #############################
 
-class TargetCameraPanel(bpy.types.Panel):
+class VIEW3D_PT_TargetCamera(bpy.types.Panel):
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "UI"
 	bl_category = "Sniper"
@@ -801,7 +801,7 @@ class DeleteTargetOperator(bpy.types.Operator):
 	bl_idname = "sniper.delete_target"
 	bl_label = "Delete Target"
 	bl_description = "Delete the target from the list."
-	currentIndex = bpy.props.IntProperty()
+	currentIndex: bpy.props.IntProperty()
 	
 	def execute(self, context):
 		deleteTarget(self.currentIndex)
@@ -819,7 +819,7 @@ class RecalculateAnimationOperator(bpy.types.Operator):
 class MoveTargetUp(bpy.types.Operator):
 	bl_idname = "sniper.move_target_up"
 	bl_label = "Move Target Up"
-	currentIndex = bpy.props.IntProperty()
+	currentIndex: bpy.props.IntProperty()
 	
 	def execute(self, context):
 		moveTargetUp(self.currentIndex)
@@ -828,7 +828,7 @@ class MoveTargetUp(bpy.types.Operator):
 class MoveTargetDown(bpy.types.Operator):
 	bl_idname = "sniper.move_target_down"
 	bl_label = "Move Target Down"
-	currentIndex = bpy.props.IntProperty()
+	currentIndex: bpy.props.IntProperty()
 	
 	def execute(self, context):
 		moveTargetDown(self.currentIndex)
@@ -838,7 +838,7 @@ class SelectTarget(bpy.types.Operator):
 	bl_idname = "sniper.select_target"
 	bl_label = "Select Target"
 	bl_description = "Select that target."
-	currentIndex = bpy.props.IntProperty()
+	currentIndex: bpy.props.IntProperty()
 	
 	def execute(self, context):
 		selectTarget(self.currentIndex)
@@ -866,7 +866,7 @@ class CopyInterpolationPropertiesToAll(bpy.types.Operator):
 	bl_idname = "sniper.copy_interpolation_properties_to_all"
 	bl_label = "Copy Interpolation Properties"
 	bl_description = "All targets will have these interpolation values."
-	currentIndex = bpy.props.IntProperty()
+	currentIndex: bpy.props.IntProperty()
 	
 	def execute(self, context):
 		copyInterpolationProperties(self.currentIndex)
@@ -879,7 +879,7 @@ class OpenDopeSheet(bpy.types.Operator):
 	
 	@classmethod
 	def poll(self, context):
-		return not areaTypeExists("DOPESHEET_EDITOR")
+		return not su.areaTypeExists("DOPESHEET_EDITOR")
 	
 	def execute(self, context):
 		openDopeSheet()
@@ -890,7 +890,7 @@ class OpenDopeSheet(bpy.types.Operator):
 #############################
 
 classes = (
-	TargetCameraPanel,
+	VIEW3D_PT_TargetCamera,
 	AddTargetCamera,
 	SetupTargetObject,
 	DeleteTargetOperator,
